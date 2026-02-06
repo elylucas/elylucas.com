@@ -1,0 +1,196 @@
+---
+import Layout from '@/layouts/layout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Play from '@lucide/astro/icons/play';
+import Clock from '@lucide/astro/icons/clock';
+import Calendar from '@lucide/astro/icons/calendar';
+
+const videos = await getCollection('videos');
+const sortedVideos = videos.sort(
+  (a: CollectionEntry<'videos'>, b: CollectionEntry<'videos'>) =>
+    new Date(b.data.publishedDate).getTime() -
+    new Date(a.data.publishedDate).getTime()
+);
+
+const categories = [
+  { value: 'all', label: 'All' },
+  { value: 'talk', label: 'Talks' },
+  { value: 'tutorial', label: 'Tutorials' },
+  { value: 'guest', label: 'Guest' },
+  { value: 'podcast', label: 'Podcasts' },
+  { value: 'other', label: 'Other' },
+];
+
+const categoryColors: Record<string, string> = {
+  talk: 'bg-primary/15 text-primary',
+  tutorial: 'bg-highlight/15 text-highlight',
+  guest: 'bg-purple-500/15 text-purple-400',
+  podcast: 'bg-green-500/15 text-green-400',
+  other: 'bg-gray-500/15 text-gray-400',
+};
+
+function getThumbnail(video: CollectionEntry<'videos'>) {
+  return video.data.thumbnail || `https://img.youtube.com/vi/${video.data.youtubeId}/mqdefault.jpg`;
+}
+---
+
+<Layout>
+  <section class="container mx-auto px-6 py-12">
+    <h1 class="text-4xl font-bold mb-8">Videos</h1>
+
+    <!-- Category filters -->
+    <div class="flex flex-wrap gap-2 mb-8" id="category-filters">
+      {
+        categories.map(({ value, label }) => (
+          <button
+            data-filter={value}
+            class:list={[
+              'px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer',
+              value === 'all'
+                ? 'bg-primary text-primary-foreground'
+                : 'glass-strong border border-border text-muted-foreground hover:text-primary hover:border-primary/50',
+            ]}
+          >
+            {label}
+          </button>
+        ))
+      }
+    </div>
+
+    <!-- Video grid -->
+    <div class="grid gap-8 md:grid-cols-2" id="video-grid">
+      {
+        sortedVideos.map((video) => (
+          <article
+            class="glass-strong rounded-t-2xl border-b border-border overflow-hidden"
+            data-category={video.data.category}
+          >
+            {/* Thumbnail with play overlay */}
+            <a
+              href={`https://www.youtube.com/watch?v=${video.data.youtubeId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block relative group"
+            >
+              <img
+                src={getThumbnail(video)}
+                alt={video.data.title}
+                class="w-full aspect-video object-cover"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div class="bg-primary/90 rounded-full p-4">
+                  <Play class="w-8 h-8 text-primary-foreground fill-current" />
+                </div>
+              </div>
+            </a>
+
+            <div class="p-4 space-y-3">
+              {/* Meta row: badge, event, duration */}
+              <div class="flex flex-wrap items-center gap-2 text-sm">
+                <span
+                  class:list={[
+                    'px-2 py-0.5 rounded-full text-xs font-medium',
+                    categoryColors[video.data.category] || categoryColors.other,
+                  ]}
+                >
+                  {video.data.category}
+                </span>
+                {video.data.event && (
+                  <span class="text-muted-foreground">{video.data.event}</span>
+                )}
+                {video.data.duration && (
+                  <span class="flex items-center gap-1 text-muted-foreground ml-auto">
+                    <Clock class="w-3.5 h-3.5" />
+                    {video.data.duration}
+                  </span>
+                )}
+              </div>
+
+              {/* Title */}
+              <a
+                href={`https://www.youtube.com/watch?v=${video.data.youtubeId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-xl font-semibold text-primary hover:underline block"
+              >
+                {video.data.title}
+              </a>
+
+              {/* Date */}
+              <p class="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Calendar class="w-3.5 h-3.5" />
+                {video.data.publishedDate.toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+
+              {/* Description */}
+              <p class="text-muted-foreground">{video.data.description}</p>
+
+              {/* Tags */}
+              {video.data.tags && video.data.tags.length > 0 && (
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  {video.data.tags.map((tag: string) => (
+                    <span class="px-2 py-0.5 rounded text-xs bg-primary/10 text-primary">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+</Layout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const filters = document.getElementById('category-filters');
+    const grid = document.getElementById('video-grid');
+    if (!filters || !grid) return;
+
+    const buttons = filters.querySelectorAll<HTMLButtonElement>('[data-filter]');
+    const cards = grid.querySelectorAll<HTMLElement>('[data-category]');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter!;
+
+        // Update active button styles
+        buttons.forEach((b) => {
+          if (b === btn) {
+            b.classList.add('bg-primary', 'text-primary-foreground');
+            b.classList.remove(
+              'glass-strong',
+              'border',
+              'border-border',
+              'text-muted-foreground'
+            );
+          } else {
+            b.classList.remove('bg-primary', 'text-primary-foreground');
+            b.classList.add(
+              'glass-strong',
+              'border',
+              'border-border',
+              'text-muted-foreground'
+            );
+          }
+        });
+
+        // Show/hide cards
+        cards.forEach((card) => {
+          if (filter === 'all' || card.dataset.category === filter) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  });
+</script>

@@ -3,6 +3,10 @@ import Layout from '@/layouts/layout.astro';
 import { type GetStaticPaths } from 'astro';
 import type { CollectionEntry } from 'astro:content';
 import { getCollection, getEntry, render } from 'astro:content';
+import Calendar from '@lucide/astro/icons/calendar';
+import ArrowLeft from '@lucide/astro/icons/arrow-left';
+import User from '@lucide/astro/icons/user';
+import Linkedin from '@lucide/astro/icons/linkedin';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const posts = await getCollection('blog');
@@ -22,24 +26,110 @@ const Content = await render(post);
 ---
 
 <Layout>
-  <div class="max-w-content p-8 bg-reading-surface space-y-4 items-center mx-auto rounded-t-2xl">
-    <h1 class="text-5xl font-bold glass">{post.data.title}</h1>
+  <article class="max-w-content mx-auto px-6 py-12">
+    {/* Back link */}
+    <a
+      href="/blog"
+      class="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary transition-colors mb-8"
+    >
+      <ArrowLeft class="w-4 h-4" />
+      Back to blog
+    </a>
+
+    {/* Header */}
+    <header class="space-y-4 mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold leading-tight">
+        {post.data.title}
+      </h1>
+
+      {/* Meta row */}
+      <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+        <span class="flex items-center gap-1.5">
+          <Calendar class="w-3.5 h-3.5" />
+          {
+            post.data.publishedDate.toLocaleDateString(undefined, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })
+          }
+        </span>
+        {
+          author && (
+            <span class="flex items-center gap-1.5">
+              <User class="w-3.5 h-3.5" />
+              {author.data.name}
+            </span>
+          )
+        }
+      </div>
+
+      {/* Summary */}
+      {
+        post.data.summary && (
+          <p class="text-lg text-muted-foreground leading-relaxed">
+            {post.data.summary}
+          </p>
+        )
+      }
+    </header>
+
+    {/* Cover image */}
     {
       post.data.coverImage && (
-        <img
-          src={post.data.coverImage}
-          alt={post.data.title}
-          class="rounded-t-2xl min-w-full"
-        />
+        <div class="rounded-2xl overflow-hidden mb-10">
+          <img
+            src={post.data.coverImage}
+            alt={post.data.title}
+            class="w-full object-cover"
+          />
+        </div>
       )
     }
-    <article class="prose dark:prose-invert prose-xl min-w-full p-4">
-      <Content.Content />
 
-      <br />
-      {author?.data.name}
-      <br />
-      {author?.data.linkedin}
-    </article>
-  </div>
+    {/* Article body */}
+    <div
+      class="glass-strong rounded-2xl border border-border p-6 md:p-10"
+    >
+      <div class="prose dark:prose-invert prose-lg max-w-none prose-headings:text-foreground prose-a:text-primary prose-strong:text-foreground prose-code:text-primary">
+        <Content.Content />
+      </div>
+    </div>
+
+    {/* Author footer */}
+    {
+      author && (
+        <footer class="mt-10 glass-strong rounded-2xl border border-border p-6 flex items-center gap-4">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <User class="w-6 h-6 text-primary" />
+          </div>
+          <div class="space-y-1">
+            <p class="font-semibold text-foreground">{author.data.name}</p>
+            {author.data.linkedin && (
+              <a
+                href={author.data.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Linkedin class="w-3.5 h-3.5" />
+                LinkedIn
+              </a>
+            )}
+          </div>
+        </footer>
+      )
+    }
+
+    {/* Back to blog bottom */}
+    <div class="mt-10 flex justify-center">
+      <a
+        href="/blog"
+        class="inline-flex items-center gap-1.5 px-6 py-3 rounded-lg font-medium glass-strong border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+      >
+        <ArrowLeft class="w-4 h-4" />
+        All posts
+      </a>
+    </div>
+  </article>
 </Layout>

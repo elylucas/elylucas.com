@@ -14,6 +14,7 @@ blahg {
   --color-foreground-muted: var(--color-gray-400);
   --color-reading-surface: color-mix(in srgb, var(--color-background) 97%, #000);
   --color-card: #141a1f;
+  --color-highlight: #d48c1a;
 }
 
 .dark {

@@ -7,7 +7,7 @@ import X from '@lucide/astro/icons/x';
 
 const navLinks = [
   {
-    href: '#about',
+    href: '/#about',
     label: 'About',
   },
   {
@@ -15,7 +15,7 @@ const navLinks = [
     label: 'Blog',
   },
   {
-    href: '#videos',
+    href: '/videos',
     label: 'Videos',
   },
 ];
@@ -115,6 +115,12 @@ const navLinks = [
   });
 
   document.addEventListener('astro:page-load', () => {
+    // Handle hash scrolling after view transitions
+    if (window.location.hash) {
+      const el = document.querySelector(window.location.hash);
+      el?.scrollIntoView({ behavior: 'smooth' });
+    }
+
     const themeButton = document.getElementById('theme-button');
     themeButton?.addEventListener('click', () => {
       if(document.documentElement.classList.contains('dark')) {

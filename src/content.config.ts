@@ -21,7 +21,23 @@ const authorCollection = defineCollection({
   }),
 });
 
+const videoCollection = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './content/videos' }),
+  schema: z.object({
+    title: z.string(),
+    publishedDate: z.date(),
+    description: z.string(),
+    youtubeId: z.string(),
+    category: z.enum(['talk', 'tutorial', 'guest', 'podcast', 'other']),
+    tags: z.array(z.string()).optional(),
+    event: z.string().optional(),
+    duration: z.string().optional(),
+    thumbnail: z.string().optional(),
+  }),
+});
+
 export const collections = {
   blog: blogCollection,
-  authors: authorCollection
+  authors: authorCollection,
+  videos: videoCollection,
 };
