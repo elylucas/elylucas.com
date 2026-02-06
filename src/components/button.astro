@@ -1,0 +1,21 @@
+---
+interface Props {
+  className?: string;
+  size?: 'sm' | 'md' | 'lg';
+}
+const { className, size = 'md' } = Astro.props as Props;
+const baseClasses =
+  'relative overflow-hidden rounded-lg font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25';
+const sizeClasses = {
+  sm: 'px-2 py-0.5 text-sm',
+  md: 'px-3 py-1 text-base',
+  lg: 'px-4 py-1.5 text-lg',
+};
+const classes = `${baseClasses} ${
+  sizeClasses[size]
+} ${className ?? ''}`;
+---
+
+<button class={classes}>
+  <span class="relative flex items-center justify-center gap-2"><slot /></span>
+</button>

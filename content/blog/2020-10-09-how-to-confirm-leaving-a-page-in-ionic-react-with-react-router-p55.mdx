@@ -1,0 +1,173 @@
+---
+title: How to Confirm Leaving a Page in Ionic React with React Router
+publishedDate: 2020-10-09
+summary: Have you ever been in the middle of an important task on a page, like filling out a form, and acciden...
+canonicalUrl: https://dev.to/ionic/how-to-confirm-leaving-a-page-in-ionic-react-with-react-router-p55
+coverImage: /assets/blog/how-to-confirm-leaving-a-page-in-ionic-react-with-react-router-p55/how-to-confirm-leaving-a-page-in-ionic-react-with-react-router-p55-cover.jpg
+author: ely-lucas
+---
+
+Have you ever been in the middle of an important task on a page, like filling out a form, and accidentally left and lost all your work? That bites! 
+
+And it's a bad experience for your users, especially on mobile.
+
+A typical technique is to confirm with the user if they do want to leave the page with a confirmation dialog. In this post, I'll show you how to do so in an Ionic React application, and how you can customize the confirmation UI to fit your particular app. Let's go!
+
+## Using React Router's Prompt Component
+
+An Ionic React application uses [React Router](https://reactrouter.com/) for all of its navigation, and, fortunately, React Router has good support for prompting the user on navigation with their [`Prompt`](https://reactrouter.com/web/api/Prompt) component. With Prompt, a confirmation box pops up asking the user if they want to leave the page. If they click yes, the navigation takes place, and if they click no, they are left on the current page.
+
+The `Prompt` component takes two props, a `message` to display, and a `when` boolean to activate it.
+
+Here is a simple IonPage with a form that utilizes the Prompt component: 
+
+``` tsx
+const Tab1: React.FC = () => {
+  const [text, setText] = useState('');
+
+  useIonViewWillLeave(() => {
+    setText('');
+  });
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Tab 1</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent fullscreen>
+        <IonInput
+          value={text}
+          placeholder="Name"
+          onIonChange={(e) => {
+            setText(e.detail.value!);
+          }}
+        ></IonInput>
+
+        <IonButton
+          expand="block"
+          onClick={() => {
+            setText('');
+          }}
+        >
+          Submit
+        </IonButton>
+        <Prompt
+          when={!!text}
+          message="You have unsaved changes, are you sure you want to leave?"
+        />
+      </IonContent>
+    </IonPage>
+  );
+};
+```
+
+> Prompt is imported from 'react-router'
+
+To determine if the form is "dirty" (if the form has been modified), we check to see if the `IonInput` has a value or not. This is a simple method, and you will probably need to expand on the concept in your app. Many form libraries provide a way to determine if the form has been modified as well.
+
+In the `useIonViewWillLeave` hook, when a user leaves the page, we set the value of text back to a blank string to "reset" the form. This keeps the prompt from showing on other pages.
+
+Now, if we try to leave the form, by say, accidentally tapping one of the other tab buttons, we get a nice confirmation:
+
+![Image of form with standard browser confirm dialog](/assets/blog/how-to-confirm-leaving-a-page-in-ionic-react-with-react-router-p55/how-to-confirm-leaving-a-page-in-ionic-react-with-react-router-p55-1.jpg)
+
+This is fairly functional as is. The confirm dialog on mobile devices looks decent, but if you want to customize the UI, we will dive into that next.
+
+## Customizing the Confirm UI
+
+Instead of showing the built-in confirm dialog that comes with the browser, you might want to display something a bit more custom to match the look and feel of your app. To change it up, we will use an [`IonAlert`](https://ionicframework.com/docs/api/alert) with custom buttons for the confirmation.
+
+React Router provides a way to tie into the process by passing in a `getUserConfirmation` prop when setting up the router. In an Ionic app, we use `IonReactRouter` and we can pass this prop here and the router will, in turn, pass the prop back down to the underlying `ReactRouter`.
+
+This prop excepts a function that gets passed in the message to display, as well as a callback. The callback takes a boolean parameter to indicate if the route navigation should happen or not. We'll add it to the main `App.tsx` page, where the routing is set up:
+
+``` tsx
+<IonReactRouter
+  getUserConfirmation={(message, callback) => {
+      
+  }}
+>
+```
+
+When `getUserConfirmation` is called, we want to display an `IonAlert` overlay with the message that was passed in. We will use a state variable to store the message. Also, we utilize a ref object to hold a reference to the callback that will be used in the alert:
+
+``` ts
+const [leaveConfirmMessage, setLeaveConfirmMessage] = useState<string>();
+const confirmCallback = useRef<(ok: boolean) => void>();
+```
+
+And to set them in the `getUserConfirmation`:
+
+``` tsx
+<IonReactRouter
+  getUserConfirmation={(message, callback) => {
+    setLeaveConfirmMessage(message);
+    confirmCallback.current = callback;
+  }}
+>
+```
+
+Next, we add the `IonAlert` towards the bottom of the page, but before the closing `</IonReactRouter>`:
+
+``` tsx
+<IonAlert
+  isOpen={!!leaveConfirmMessage}
+  message={leaveConfirmMessage}
+  buttons={[
+    {
+      text: "No",
+      handler: () => {
+        confirmCallback.current && confirmCallback.current(false);
+      },
+    },
+    {
+      text: "Yes",
+      handler: () => {
+        confirmCallback.current && confirmCallback.current(true);
+      },
+    },
+  ]}
+  onDidDismiss={() => setLeaveConfirmMessage(undefined)}
+/>
+```
+
+To determine if the alert is shown, we check if the confirm message has a value, and then set the message back to undefined when the alert is dismissed. In the buttons, we use the ref we set up to invoke the callback function, passing true when the user clicks "Yes", and false when "No" is clicked.
+
+And that's it! We use the `Prompt` component as we did before in any page we want to use this custom UI. No changes are needed in our form page.
+
+![Image of form with custom dialog using IonAlert](/assets/blog/how-to-confirm-leaving-a-page-in-ionic-react-with-react-router-p55/how-to-confirm-leaving-a-page-in-ionic-react-with-react-router-p55-2.jpg)
+
+## Using the Browsers `beforeUnload` Event
+
+One last thing we need to cover, which is what happens when the user tries to move away from the page outside of our app, like via the back button or changing the URL manually?
+
+We can use the browser's [`beforeUnload`](https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event) event for this, though it is not customizable, browser support is limited, and it requires a bit more code. However, setting it up will give our users whose browsers support it extra protection if they, say, accidentally refresh their page.
+
+Back in the page with the form, we will add a `useEffect` hook to monitor the `text` state. We set the `onbeforeunload` method on the window object to a function that returns `true` when the text has a value, and when the effect changes, set it `null` to turn it back off:
+
+``` tsx
+useEffect(() => {
+  if (text) {
+    window.onbeforeunload = () => true;
+  }
+  return () => {
+    window.onbeforeunload = null;
+  };
+}, [text]);
+```
+
+This could also be abstracted into its own component or hook for reuse.
+
+## Wrapping up
+
+Adding some safeguards to prevent your users from accidentally leaving a page while they are performing an important task is, thankfully, pretty straight-forward in an Ionic React app thanks to the built-in support in React Router. 
+
+[I put together a demo app you can take a look at](https://github.com/elylucas/ionic-react-leave-page-confirm), feel free to check it out. Also, hit me up on twitter @elylucas or in the comments below if you have any questions.
+
+Happy Coding!
+
+
+
+
+

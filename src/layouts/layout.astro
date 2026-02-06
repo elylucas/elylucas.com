@@ -1,0 +1,87 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import Header from './header.astro';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <ClientRouter />
+    <title>Astro</title>
+    <script is:inline>
+      function setTheme() {
+        const theme = (() => {
+          const localStorageTheme = localStorage?.getItem('theme') ?? '';
+          if (['dark', 'light'].includes(localStorageTheme)) {
+            return localStorageTheme;
+          }
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+          }
+          return 'light';
+        })();
+        if (theme === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      }
+      setTheme();
+      document.addEventListener('astro:after-swap', () => {
+        setTheme();
+      });
+    </script>
+  </head>
+  <body class="h-screen w-full text-foreground duration-500">
+    <!-- <div
+      class="fixed top-0 right-0 left-0 bottom-0 bg-linear-to-b from-background/10 via-background/80 to-background -z-10"
+    >
+    </div> -->
+    <!-- stars -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+      {
+        [...Array(0)].map((_, idx) => {
+          return (
+            <div
+              class="absolute rounded-full animate-fade-in"
+              style={{
+                fontSize: '14px',
+                // whiteSpace: 'no-wrap',
+                color: 'var(--color-primary)',
+                // opacity: `${0.3 + Math.random() * 0.4}`,
+                opacity: '0',
+                fontFamily: 'var(--font-mono)',
+                // background: 'var(--color-primary)',
+                // '-webkit-font-smoothing': 'antialiased',
+                // '-moz-osx-font-smoothing': 'grayscale',
+                left: `${Math.ceil(Math.random() * 100)}%`,
+                top: `${Math.ceil(Math.random() * 45)}%`,
+                // imageRendering: 'pixelated',
+                animation: `slow-drift ${Math.ceil(25 + Math.random() * 60)}s ease-in-out infinite alternate, pulse 8s cubic-bezier(0.1, 0, 0.1, 1) infinite`,
+                // animation: 'pulse 3s ease-in-out infinite alternate',
+                // '-webkit-backface-visibility': 'hidden',
+                // backfaceVisibility: 'hidden',
+                // willChange: 'transform3d',                // '-moz-backface-visibility': 'hidden',
+                // '-ms-backface-visibility': 'hidden',
+                animationDelay: `${Math.ceil(Math.random() * 5)}s`,
+              }}
+            >
+              {idx % 2 === 0 ? '1' : '0'}
+              {/* {Math.random() > 0.5 ? String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96)) : ''} */}
+
+              {/* {['=', '!','0', '1', '*', '!', '.', '&', '[', ']', '#', '>','<'][Math.floor(Math.random() * 13)]} */}
+            </div>
+          );
+        })
+      }
+    </div>
+    <Header />
+    <main class="max-w-site mx-auto mt-12">
+      <slot />
+    </main>
+  </body>
+</html>

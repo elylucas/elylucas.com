@@ -1,0 +1,144 @@
+---
+title: How to Reduce the Number of Renders in an Ionic React App
+publishedDate: 2021-01-28
+summary: Hello friends!  Welcome to this first article in a series that I plan on doing around quick tips for...
+canonicalUrl: https://dev.to/ionic/how-to-reduce-the-number-of-renders-in-an-ionic-react-app-26mm
+coverImage: /assets/blog/how-to-reduce-the-number-of-renders-in-an-ionic-react-app-26mm/how-to-reduce-the-number-of-renders-in-an-ionic-react-app-26mm-cover.png
+author: ely-lucas
+---
+
+Hello friends!
+
+Welcome to this first article in a series that I plan on doing around quick tips for routing in Ionic React.
+
+To kick this series off, I'm going to answer one of the top questions I get, and that's "Why do my Ionic Pages render so much?"
+
+For starters, you shouldn't be overly concerned with multiple renders. During the render phase, React will build up a representation of your component in what is called the Virtual DOM. Building this VDOM is relatively cheap. Afterward, React will compare the VDOM to what is in the actual DOM, and it will only do the costly DOM updates if there are actual changes.
+
+This means that if your component renders again, but there aren’t any changes, then the cost is minimal.
+
+However, there are a couple of drawbacks to rendering too much. First, React must construct the VDOM and run its diffing algorithm for each render call. While this is highly optimized and fast, doing so is wasteful if the component doesn’t need to update. Second, if you have costly code in the render method, it will get run each time. 
+
+Also, if you are like me, it can drive you bonkers.
+
+Therefore, trying to cut down on the number of renders is a micro-optimization, but sometimes it’s one worth taking.
+
+In this article, we will take a look at why render gets called multiple times, and then I'll show you some techniques you can use in your own apps to help reduce them.
+
+## Project Setup
+
+If you want to follow along, start up a new Ionic React app using the [Ionic CLI](https://ionicframework.com/docs/intro/cli): 
+
+```shell
+ionic start RenderTest tabs --type=react 
+```
+
+And in the Tab1.tsx file, add a log statement inside of the function so we can see each time the component is rendered:
+
+```tsx
+const Tab1: React.FC = () => {
+  console.log('tab1 render');
+  
+  return (
+    <IonPage>
+      {...}
+    </IonPage>
+  );
+};
+```
+
+Fire up the app with `ionic serve`, and you will see that, on initial load, the Tab1 page renders twice:
+
+![initial-render](/assets/blog/how-to-reduce-the-number-of-renders-in-an-ionic-react-app-26mm/how-to-reduce-the-number-of-renders-in-an-ionic-react-app-26mm-1.png)
+
+However, if you click around on the tabs, you will see that Tab1 renders 3-4 times each time you switch a tab! What's going on here?
+
+## Why you render so much?
+
+![yodawgrender](/assets/blog/how-to-reduce-the-number-of-renders-in-an-ionic-react-app-26mm/how-to-reduce-the-number-of-renders-in-an-ionic-react-app-26mm-2.jpg)
+
+Every page in an Ionic React app is wrapped with an `IonPage` component. The IonPage not only provides some div containers for holding your page and styles around it, but it is also very important when it comes to doing page transitions. 
+
+There is some semi-complicated logic that goes on in the background in regards to getting a reference to these IonPages when they are transitioned to and from. Unfortunately, to get the reference, we have to wait until the component mounts, then grab the reference, and store that reference in context.  This all happens in the IonRouterOutlet component, but when this component renders, it often causes its children (your routes and IonPages) to render along with it.
+
+This is why you might see an IonPage render two or three times when it is displayed the first time.
+
+Next, you might notice that some pages might render when they are not even in the current view.
+
+ To provide some of the smooth transitions and to maintain the state of views that you left but might come back to, we don't actually unmount your component in some scenarios (like navigating between tabs). Instead, when your page transitions out of view, we hide it via CSS. The component is still mounted and can still render. Therefore, if the component gets any new props passed into it, it will render.
+
+By default, the routes are setup to pass in the your IonPage in the component prop of a route, like so:
+
+```tsx
+<Route path="/tab1" component={Tab1} exact={true} />
+```
+
+When using the component prop, React Router will pass in some props on your behalf, like `location` and `history`. Each time you make a navigation change, these route props will change, which will cause all your IonPages that are currently mounted to render again.
+
+This can get a bit out of hand, so let’s take a look at a few strategies to cut down on the excessive renders.
+
+## Optimizing the renders
+
+So there are two main culprits here. Parent components that are rendering that cause its children to render, and new props being passed in via routing that causes another render.
+
+Let's deal with parent components rendering first.
+
+### Component Memoization 
+
+In React class-based components, we were able to finely control when components would render with the `shouldComponentUpdate` lifecycle method. This method would receive the new props/state coming in, which we could compare to the old props/state and determine if we want our component to call its render method. Or, even better, we could inherit from `React.PureComponent` and let React take care of this logic for us.
+
+This would make it so that your component would only update if its props or state change, and ignore any updates from the parent component rendering.
+
+To accomplish something similar in a React Functional Component (FC), we can wrap our FC in `React.memo`, which will [memoize](https://en.wikipedia.org/wiki/Memoization) your component and store a cached version of it based on the props that are passed into it.
+
+To do so, I like to wrap the FC as its being exported with `React.memo` like so:
+
+```tsx
+export default React.memo(Tab1);
+```
+
+You should notice that now the number of renders is cut down quite a bit when you navigate between the tabs.
+
+Using `React.memo` is a good way to cut down on needless renders, however, take care when doing this, as you are basically trading fewer renders for memory consumption.
+
+### Route Setup
+
+Next, let’s modify our routes so that React Router no longer passes in the Route Component props into our Tab1 page.
+
+In the route setup, we are using the `component` prop, and React Router will pass in all the route props every time there is a change in navigation. 
+
+As of React Router 5.1, there is a new method to specify which component to render when the route matches, [and this method is encouraged going forward](https://reacttraining.com/blog/react-router-v5-1/#staying-ahead-of-the-curve).
+
+The new method is to pass your component in as a child to the route like so:
+
+```tsx
+<Route path="/tab1" exact={true}>
+  <Tab1 />
+</Route>
+```
+
+Now, if you check the logs, you will see that the `Tab1` page only renders once on its initial load, and has no additional renders when navigating between the tabs. Nice 🎉!
+
+"But what if I need the routing props in my component?" I hear you ask.
+
+React Router has you covered there as well. There are several new [React Hooks available](https://reacttraining.com/blog/react-router-v5-1/#meet-react-router-51) that you can use to get access to the same props that were passed in before, namely `useParams`, `useLocation`, and `useHistory`. So if you had a route setup to get an `id` param from the path, you would access it like so:
+
+```tsx
+/* The Route: */
+<Route path="/tab1/:id" exact={true}>
+  <Tab1 />
+</Route>
+
+/* And inside the Tab1.tsx function: */
+const params = useParams<{id: string}>();
+// do something with params.id
+```
+
+### Wrapping Up
+
+With just a few quick optimizations, we were able to cut down the renders from many times on page navigation, to just a single time when the IonPage first loads. Not too shabby!
+
+Got any comments or want to see me cover something around Ionic React in the future? Hit me up in the comments below or catch me on Twitter [@elylucas](https://www.twitter.com/elylucas).
+
+Happy coding!
+

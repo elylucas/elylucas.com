@@ -1,0 +1,145 @@
+---
+title: How to CSS in Ionic React with Styled Components
+publishedDate: 2020-09-10
+summary: When it comes to writing CSS in a React app, there are numerous options to choose from. And many peop...
+canonicalUrl: https://dev.to/ionic/how-to-css-in-ionic-react-with-styled-components-2eo6
+coverImage: /assets/blog/how-to-css-in-ionic-react-with-styled-components-2eo6/how-to-css-in-ionic-react-with-styled-components-2eo6-cover.png
+author: ely-lucas
+---
+
+When it comes to writing CSS in a React app, there are numerous options to choose from. And many people coming to Ionic React for the first time often wonder what the best approach is. The React library itself doesn't have an opinion about how styles are used in a React app, so where does one turn?
+
+By default, an Ionic React application uses plain old CSS files that are included in their corresponding components. This is a tried and true approach that has been around since the beginning of web development. However, this approach doesn't fit in well with the idea of writing encapsulated (yet extensible) components in React. 
+
+One of the major drawbacks to the plain old CSS approach is that there is no built-in mechanism to scope the CSS to your particular page or component. This could lead to unintended side effects where styles bleed out of their components and affect other elements.
+
+Other areas of concern crop up around how to extend the style of a component,  and how to apply themes to a component with only plain CSS.
+
+Fortunately, there is a vibrant community in the React ecosystem that has solved a few of these issues. And since an Ionic React app is just a React app, we are free to utilize any of them in our apps!
+
+In this post, I'll be going over one of my particular favorite libraries in the space, [Styled Components](https://styled-components.com/), and show you how to get started using it to style your apps!
+
+# Meet Styled Components
+
+[Styled Components](https://styled-components.com/) (SC for short from here on out) is a library that breaks down the barrier of tying styles to your React components. With SC, you don't need to declare particular CSS classes and hope they don't stomp on other classes in your project. Instead, you declare a component using the SC API, and then "attach" CSS to the component: 
+
+``` jsx
+const MyButton = styled.button`
+  padding: 12px;
+  background-color: white;
+  color: blue;
+`; 
+```
+
+> If you are using VS Code, make sure to download the [vscode-styled-components](https://marketplace.visualstudio.com/items?itemName=jpoissonnier.vscode-styled-components) extension, which will give you syntax highlighting and CSS code completion when working with styled-components.
+
+Those funky back-ticks above are a new(ish) JavaScript feature called [Tagged Template Literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals). You've used and loved normal template literals (`Hello ${name}!`) before. Tagged Template Literals are the same, but instead of doing the default string interpolation function when you use them on their own, you get to defined the function that gets ran on the string. Above, `styled.button` is a function that will take in the text in the literal and manipulate it into a React component with a class attached to it with our CSS. In the end, the `MyButton` component will emit HTML that will look similar to:
+
+``` html
+<button class="sc-bdnylx bIGghp">Click Me</button>
+```
+
+SC will worry about generating a unique class name on your behalf so your CSS is scoped to your component, and it won't affect other styles in your app.
+
+## Getting Started
+
+Installing SC is a breeze. To get it into your Ionic React project run:
+
+``` bash
+npm i styled-components @types/styled-components
+```
+
+This will install SC and it's typings so we can get great TypeScript autocompletion and type checking.
+
+Next, import the styled object directly from `styled-components`:
+
+``` jsx
+import styled from 'styled-components';
+```
+
+And then start creating styled-components using the `styled` object. In the first example above, we created a button. However, the styled object has all the basic HTML primitive tags on it, like `div`, `a`, `header`, you name it. You can also extend other React components, as long as the component takes in `className` as a prop, and that className gets applied to the underlying HTML element the component renders. 
+
+## Scoping CSS to an IonPage
+
+One of the big benefits you get when using Ionic Angular is that the styles you define using the `:host` pseudo-selector in a component's CSS file are scoped only to that component. You can achieve the same thing in Ionic React using SC. Below, we will create a "styled" `IonPage` by passing in `IonPage` into the styled object:
+
+``` jsx
+const MyPage = styled(IonPage)`
+ 
+`;
+```
+
+And replacing `IonPage` with `MyPage` in the JSX:
+
+``` jsx
+<MyPage>
+  <IonHeader>...</IonHeader>
+  <IonContent fullscreen>...</IonContent>
+</MyPage>
+```
+
+Adding styles directly to `IonPage` isn't terribly useful, though. What it does buy us, however, is we can now target other classes in our page without fear that they will affect another page. Styled Components supports nesting CSS classes, a feature that I loved in SASS and find it hard to live without in plain CSS (though we might someday get [native nesting support](https://github.com/w3c/csswg-drafts/issues/2701) in CSS). So, we can start to define new elements with classes and target them in our `MyPage` component:
+
+``` jsx
+const MyPage = styled(IonPage)`
+  .box {
+    border: 1px solid white;
+    margin: 10px;
+    height: 200px;
+    width: 200px;
+  } 
+`;
+```
+
+``` jsx
+<MyPage>
+  <IonHeader>...</IonHeader>
+  <IonContent fullscreen>
+	  <div className="box"></div>
+  </IonContent>
+</MyPage>
+```
+
+> Please forgive my lack of design powers, I rolled a 2 on Aesthetics when born.
+
+## Styling an Ionic Component
+
+Styling one of the built-in Ionic components couldn't be easier. In fact, you already saw how to do so in the above example. Let's look at a component that offers some more options though, like `IonButton`:
+
+``` tsx
+const MyButton = styled(IonButton)`
+  --background: green;
+`;
+...
+// And to use it:
+<MyButton>Hello!</MyButton>
+```
+
+Ionic components are web components that use Shadow DOM, therefore, styles defined outside of the web component don't affect the inner parts of the web component. To get around this, Ionic uses CSS Variables that allow developers to set styles that the web component can use.
+
+In the above example, we set the `background` and `border-color` CSS variables, and these changes will only apply to our `MyButton` component.
+
+Recently, Ionic also released support for Shadow Parts, which allows web component developers to expose certain parts of the web component and have those parts be targeted via CSS. Below, we accomplish the same thing as the example above but we target the native HTML button via the `native` shadow part:
+
+``` tsx
+const MyButton = styled(IonButton)`
+  &::part(native) {
+    background-color: green;
+  }
+`;
+```
+The `&` refers to the parent component itself, then we use the `part` pseudo-selector and target the `native` shadow part that the `IonButton` exposes.
+
+Learn more about [CSS Variables](https://ionicframework.com/docs/theming/css-variables) and [Shadow Parts](https://ionicframework.com/docs/theming/css-shadow-parts) from our docs, and check out this post about [Shadow Parts](https://ionicframework.com/blog/customize-your-ionic-framework-app-with-css-shadow-parts/) on the Ionic blog.
+
+## Wrapping up
+
+CSS in React, (and Ionic React!), is a tricky subject, but fortunately, there are many ways you can go about it.
+
+Hopefully, I gave you a taste of what you can do by using styled-components in an Ionic React app and opened your eyes to some of the possibilities. 
+
+I just covered the bare minimum of what you can do with styled-components, there's much more to it, and once you get the grasp of the library, you can create some pretty powerful components.  I encourage you to visit the [Styled Component docs](https://styled-components.com/docs) to learn more and give it a try.
+
+How are you going about styling your Ionic React apps? Is there something more you want to see? Hit me up in the comments below for reach out to me [@elylucas](https://twitter.com/elylucas) and I just might write about it.
+
+Happy Coding!

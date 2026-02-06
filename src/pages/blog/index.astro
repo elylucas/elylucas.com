@@ -1,0 +1,38 @@
+---
+import Layout from '@/layouts/layout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+const blogPosts = await getCollection('blog');
+const sortByDate = (a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
+  new Date(b.data.publishedDate).getTime() -
+  new Date(a.data.publishedDate).getTime();
+const sortedPosts = blogPosts.sort(sortByDate);
+---
+
+<Layout>
+  <section class="container mx-auto px-6 py-12">
+    <h1 class="text-4xl font-bold mb-8">Blog</h1>
+    <div class="grid gap-8 md:grid-cols-2">
+      {
+        sortedPosts.map((post) => (
+          <article class=" glass-strong rounded-t-2xl border-b p-4">
+            <a
+              href={`/blog/${post.id.replace('.md', '')}`}
+              class="text-2xl font-semibold text-primary hover:underline"
+            >
+              {post.data.title}
+            </a>
+            <p class="text-sm text-muted-foreground mt-2">
+              {post.data.publishedDate.toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
+            <p class="mt-4 text-primary">{post.data.summary}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section></Layout
+>

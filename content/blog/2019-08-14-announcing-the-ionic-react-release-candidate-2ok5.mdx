@@ -1,0 +1,118 @@
+---
+title: Announcing the Ionic React Release Candidate!
+publishedDate: 2019-08-14
+summary: >-
+  Today we are excited to announce that the Release Candidate for Ionic React
+  has launched and is now...
+canonicalUrl: https://ionicframework.com/blog/announcing-ionic-react-release-candidate/
+coverImage: /assets/blog/announcing-the-ionic-react-release-candidate-2ok5/announcing-the-ionic-react-release-candidate-2ok5-cover.png
+author: ely-lucas
+---
+
+---
+
+title: Announcing the Ionic React Release Candidate! published: true tags:
+React, webdev, Announcements, Ionic cover_image:
+https://thepracticaldev.s3.amazonaws.com/i/bqa7fpfik24291wdxnj6.png
+canonical_url:
+https://ionicframework.com/blog/announcing-ionic-react-release-candidate/
+
+---
+
+<p style="font-size:25px; line-height:150%;">
+  Today we are excited to announce that the <strong>Release Candidate</strong>{' '}
+  for Ionic React has launched and is now available!
+</p>
+
+We released the first [Beta of Ionic React](https://ionicframework.com/blog/announcing-the-ionic-react-beta/) in February, and since then, we have received a ton of feedback and contributions from the community. Based on this feedback, we have been working to make Ionic React a great experience not only for React developers but for anyone looking to jump into web development.
+
+Ionic React RC marks the first major release of our vision to bring Ionic
+development to more developers on other frameworks. This was made possible by
+Ionic v4.0, which was completely re-written from the ground up focusing on web
+standards and not dependent on a particular framework. Ionic v4.0 makes it
+possible for us to target many frameworks while still having our core components
+be a single code base shared across all these frameworks.
+
+## Why Ionic React?
+
+If you can use Ionic with any framework, why are there specialized packages like
+`@ionic/react`? This is a good and fair question.
+
+While you could import the core Ionic components directly into your React
+project, the developer experience is not where we think it should be when
+working with Ionic. While working with web components is possible in React,
+there is some boilerplate code you would have to write to properly communicate
+with the web components.
+
+Ionic React is a thin wrapper around our core components, exporting them as
+native React components and handling this boilerplate code for you. Thus using
+`@ionic/react` feels natural when working in React, and offers many React
+paradigms that aren't there in the core components.
+
+There are also a few features that were still required to be written in the
+native framework, such as page lifetime management and lifecycle methods. To
+accomplish this, we extend the popular `react-router` package with
+`@ionic/react-router`. It is important to note that we are not creating a new
+router, but just extending React Router to provide a better experience when
+working with Ionic apps.
+
+## Getting Started
+
+If you haven't already done so, grab the latest [v5 release](https://ionicframework.com/blog/ionic-cli-v5-brings-react-beta-support/) of the Ionic CLI:
+
+```bash
+npm i ionic -g
+```
+
+And create an Ionic React project by specifying the type of "react":
+
+```bash
+ionic start MyReactApp --type=react
+```
+
+You will see that all of our standard starter templates are there, choose your
+favorite (I'll choose tabs).
+
+<img
+  src="https://blog.ionicframework.com/wp-content/uploads/2019/08/start_ionic_react_app_cli.png"
+  alt=""
+  class="aligncenter size-full wp-image-2955"
+/>
+
+The Ionic CLI will create your project for you and install dependencies. Under the hood, the CLI uses [Create React App](https://facebook.github.io/create-react-app/) (CRA) to initialize the React bits of the project. If you are familiar with CRA then all the functionality provided by the CRA scripts are available to you in Ionic React.
+
+Next, go into the new folder (MyReactApp), and run `ionic serve`. Your app will
+be compiled and launched into a new browser window:
+
+<img
+  src="https://blog.ionicframework.com/wp-content/uploads/2019/08/ionic-react-rc-starter.png"
+  alt=""
+  class="aligncenter size-full wp-image-2950"
+/>
+
+For a more in-depth getting started tutorial, check out our [Build your First App](https://ionicframework.com/docs/react/your-first-app) guide for Ionic React in the docs.
+
+## Whats Next?
+
+Now that Ionic React RC is out, we want you to test it out and send us your feedback. To report an issue or comment, head over to the [GitHub repo](https://github.com/ionic-team/ionic/issues) and tag the issue with "package react". You can also head over to the [forums](https://forum.ionicframework.com/) to ask questions or start a discussion.
+
+For the Ionic Team, our focus is set on releasing Ionic React final "soon". We
+will be looking closely at any issues that pop up during the RC phase and
+working on some final code stabilization and minor bug fixes. We don't expect
+any of the APIs to have any more significant changes.
+
+We also plan on creating some more content and guides in the docs to help with
+some best practices we've found when working with Ionic React.
+
+Until then, keep sending us your feedback and happy coding!
+
+<strong>P.S.</strong> If you are heading out to [React Rally](https://www.reactrally.com/) on August 22nd - 23rd, stop by our booth and say Hi! Several members of the core team will be out there and we would love to chat! We might even have something new to talk about then...
+
+---
+
+Resources linked above in one convenient little place:
+
+- [Build Your First Ionic React App](https://ionicframework.com/docs/react/your-first-app)
+- [Ionic React Project on Github](https://github.com/ionic-team/ionic/tree/master/packages/react)
+- [Ionic Forums](https://forum.ionicframework.com/)
+- [Create React App](https://facebook.github.io/create-react-app/)

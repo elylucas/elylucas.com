@@ -1,0 +1,208 @@
+---
+title: Testing Web Components in React?
+publishedDate: 2020-01-30
+summary: Testing in React is a joy. Between Jest and React Testing Library (RTL from here on out), it is super...
+canonicalUrl: https://dev.to/ionic/testing-web-components-in-react-4e49
+coverImage: ""
+author: ely-lucas
+---
+
+Testing in React is a joy. Between Jest and React Testing Library (RTL from here on out), it is super simple to get up and running and productive. In fact, as of the CRA 3 release, RTL is included out of the box, making it even quicker.
+
+However, there has been a sticky point that got me hung up lately, and that's been around testing a React component that consumes web components.
+
+In this post, I'm going to cover the problem that arises with web components and testing, and show a particular method I used to get around it.
+
+## The Sticky Point
+
+
+At [Ionic](https://ionicframework.com/), all of our UI components are written as web components via [StencilJS](https://stenciljs.com/). In Ionic React, we wrap those web components with lite React wrappers to help wire up the events and provide a better developer experience. Therefore, using an Ionic React component like:
+
+```tsx
+<IonLabel>Hello</IonLabel>
+```
+
+Essentially becomes 
+
+```html
+<ion-label class="sc-ion-label-ios-h sc-ion-label-ios-s ios hydrated">Hello</ion-label>
+```
+
+By the time it is rendered in the browser.
+
+There's quite a bit of logic in an Ionic component.
+
+And `<ion-label>` is one of the simplest components we have.
+
+I've been working on some testing guidance for Ionic React apps, and in doing so, I found that testing web components has its own set of challenges.
+
+Now, this isn't a problem with Ionic, React, Jest, or RTL. The problem lies that the engine that Jest uses by default to render React components is JSDOM, which doesn't support web components at this time.
+
+Therefore, when rendered, our `<IonLabel>` component example above, appears like this to RTL when JSDOM is done rendering it:
+
+```html
+<ion-label>Hello</ion-label>
+```
+
+It is an empty HTML tag with no style, logic, or functionality. Not at all the same thing that gets rendered in the browser.
+
+At first, I was determined to get these web components up and running so writing tests in RTL would match what gets rendered in a browser as closely as possible. I did have some requirements, however. I did not want to have to export the React app or have to do some overly complex configuration to get it running.
+
+So, I tried a few different polyfills and some different Jest environments that support web components, but never quite got anything to work.
+
+So, how are we supposed to test a React app that relies on web components if the web components don't render?
+
+After thinking on it for a bit, however, I realized that maybe web components don't need to work to test *your* React app.
+
+## What is it you are trying to test?
+
+When writing tests, you are often testing that some effect you induce to your component has some result. You load a page, and data appears. You click a button, and an XHR request gets sent off. An input gets changed, and updates a label elsewhere on the page, etc...
+
+None of these have much to do with the internal workings of a web component. 
+
+When I have a list of items that I want to render into a `<IonList>`, I don't need to see all the divs, header tags, slots, and shadow dom created. All I want is to see the items I expect to appear in the list. 
+
+And, this is precisely what I get, even if the web components aren't working.
+
+```tsx
+<IonList>
+{people.map(p => <IonItem>{p.name}</IonItem)}
+</IonList>
+```
+
+Renders:
+
+```html
+<ion-list>
+    <ion-item>Ely</ion-item>
+    <ion-item>Joe</ion-item>
+</ion-list>
+```
+
+I can use RTL to make sure all my peeps are in that list:
+
+```
+await waitForElement(() => people.map(p => getByText(p.name));
+```
+
+None of the test logic changes because my web component didn't render.
+
+The empty, lifeless HTML tags that get rendered still respond to  DOM events, too, so you can simulate a click on a `<IonButton>`. The buttons `onClick` event still triggers, and from our tests perspective, it doesn't matter if the event came from the HTML tag or the internal workings of IonButton.
+
+What this comes down to is that we can think of a web component as an external piece of code, and the implementation details of that code shouldn't affect our app. 
+
+## Testing components with Logic
+
+But what if a web component has logic in it that we need to happen for our app to work? For instance, having a modal open when setting a prop, or having a toggle component fire an onChange event when clicked?
+
+Not having logic work in Ionic components was a tricky sticky point for me and what caused me to search for so long on how to get web components to work with Jest and JSDOM.
+
+After a bit though, I came to another realization: A web component can be thought of like an external service, and it might be possible to mock it as such.
+
+If you are using web components in React, then the chances are good that you are using React wrappers around your web components to access the web components props and events (much like Ionic React wraps the core Ionic web components).
+
+If you do use wrappers, then you can mock the React components you import via Jest's excellent mocking capabilities. If you don't and you use raw web components in your JSX, well, I'm not sure then. Maybe it's a good time to wrap them?
+
+Let's say you have a toggle web component that fires a custom change event when clicked. Since the change event is raised internally in the component, it won't fire when running under JSDOM. Bummer! However, if we mock out that component, we can fire the event ourselves in the mock. 
+
+Here is an example of a web component, a React component the wraps the web one, the test, and the mock:
+
+A web component defined somewhere in your app:
+```
+window.customElements.define('my-toggle', class extends HTMLElement {
+  checked = false;
+  constructor() {
+    super();
+    const shadow = this.attachShadow({ mode: 'open' });
+    const toggle = document.createElement('input');
+    toggle.setAttribute('type', 'checkbox');
+    toggle.addEventListener('click', (e: MouseEvent) => {
+      this.checked = !this.checked;
+      this.dispatchEvent(new CustomEvent('myChange', {
+        detail: {
+          checked: this.checked
+        }
+      }));
+    });
+    shadow.appendChild(toggle);
+  }
+});
+```
+
+The React wrapper:
+
+```tsx
+interface MyToggleProps {
+  onMyChange?: (e: CustomEvent) => void
+}
+
+const MyToggle: React.FC<MyToggleProps> = ({ onMyChange }) => {
+  const ref = useRef<HTMLElement>();
+
+  useEffect(() => {
+    onMyChange && ref.current!.addEventListener('myChange', (e) => onMyChange(e as any));
+  }, []);
+
+  return (
+    <my-toggle ref={ref}></my-toggle>
+  );
+};
+
+export default MyToggle;
+```
+
+And here how we could use the wrapper:
+
+```tsx
+<MyToggle data-testid="my-toggle" onMyChange={(e) => setShowText(e.detail.checked)}></MyToggle>
+{showText && <div>More text!</div>}
+```
+We will set up our test as follows:
+
+```tsx
+test('when my toggle is clicked it should show more text', async () => {
+  const {getByTestId, getByText } = render(<MyComponent />);
+  const toggle = getByTestId('my-toggle');
+  fireEvent.click(toggle);
+  await waitForElement(() => getByText('More text!'))
+});
+```
+
+However, when the test runs, the div element won't show up when the toggle is clicked. Why? Because the web component isn't actually running right now, and therefore the custom event firing in the click handler is not either.
+
+So, I propose to mock the MyToggle React component with a slim implementation of the web component functionality.
+
+To do so, add this mock somewhere in the setup of your tests:
+
+```tsx
+function mockMyToggle({ onMyChange, ...rest }: any) {
+  return (
+    <my-toggle>
+      <input {...rest} type="checkbox" onClick={(e) => {
+        onMyChange && onMyChange(new CustomEvent('myChange', {
+          detail: {
+            checked: e.currentTarget.checked
+          }
+        }));
+      }} />
+    </my-toggle>
+  );
+}
+
+jest.mock('../components/MyToggle', () => mockMyToggle);
+```
+
+> The `jest.mock` method mocks out the entire MyToggle module at that specific path, which is where our component imports it from.  [More info](https://jestjs.io/docs/en/mock-functions#mocking-modules).
+
+In this mock, we have set up enough logic to simulate our web component without actually using it.
+
+Now, when our test runs, it uses the mock instead of the real React component, and our test passes.
+
+## Thoughts?
+
+The above is a lot to digest, but my premise is that if you are having issues trying to get web components to work in JSDOM, maybe you don't need to.
+
+I haven't taken this idea too far yet, but so far, it has worked out decently. I'd love to hear your thoughts about the above approach or if you had success with other methods.
+
+And, who knows, maybe JSDOM will land web component support, and this will all be moot.
+

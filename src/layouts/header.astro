@@ -1,0 +1,133 @@
+---
+import Button from '@/components/button.astro';
+import Moon from '@lucide/astro/icons/moon';
+import Sun from '@lucide/astro/icons/sun';
+import Menu from '@lucide/astro/icons/menu';
+import X from '@lucide/astro/icons/x';
+
+const navLinks = [
+  {
+    href: '#about',
+    label: 'About',
+  },
+  {
+    href: '/blog',
+    label: 'Blog',
+  },
+  {
+    href: '#videos',
+    label: 'Videos',
+  },
+];
+---
+
+<header
+  class="flex justify-between z-50 max-w-site items-center mx-auto px-4 py-2"
+>
+  <div class="flex">
+    <a
+      href="/"
+      class="text-2xl font-bold tracking-tight text-primary hover:text-primary/50"
+    >
+      <img
+        src="/assets/pixel_avatar.png"
+        alt="Ely Lucas Logo"
+        class="inline h-16 w-16"
+      />
+      Ely Lucas
+    </a>
+  </div>
+  <nav class="">
+    <!-- Desktop -->
+    <div class="hidden md:flex items-center gap-4">
+      {
+        navLinks.map((link) => (
+          <a
+            class="px-4 py-2 text-lg text-primary hover:text-primary/50 hover:bg-surface"
+            href={link.href}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+      <div>
+        <button id="theme-button" class="absolute">
+          <Sun
+            class="absolute rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+          />
+          <Moon
+            class="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+          />
+        </button>
+        <button> </button>
+      </div>
+    </div>
+
+    <!-- mobile menu button -->
+    <button
+      aria-expanded="false"
+      class="group block md:hidden p-2 text-primary hover:cursor-pointer"
+      id="menu-button"
+    >
+      <Menu class="group-aria-expanded:hidden" />
+      <X class="hidden group-aria-expanded:block" />
+    </button>
+  </nav>
+
+  <!-- mobile menu -->
+  <div
+    role="menu"
+    aria-hidden="true"
+    class="hidden sm:hidden glass-strong absolute top-24 left-0 right-0 z-100"
+    id="mobile-menu"
+  >
+    <div class="container mx-auto px-6 py-6 flex flex-col gap-4">
+      {
+        navLinks.map((link) => (
+          <a
+            class="text-lg text-muted-foreground hover:text-primary py-2"
+            href={link.href}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+      <Button size="md">Contact me</Button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const button = document.getElementById('menu-button');
+  button?.addEventListener('click', () => {
+    const menu = document.getElementById('mobile-menu');
+    const isExpanded = button.getAttribute('aria-expanded') === 'true';
+    button.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+    menu?.setAttribute('aria-hidden', isExpanded ? 'true' : 'false');
+    if (isExpanded) {
+      menu?.classList.add('animate-fade-out');
+      menu?.classList.remove('animate-fade-in');
+    } else {
+      menu?.classList.remove('animate-fade-out');
+      menu?.classList.remove('hidden');
+      menu?.classList.add('animate-fade-in');
+    }
+  });
+
+  document.addEventListener('astro:page-load', () => {
+    const themeButton = document.getElementById('theme-button');
+    themeButton?.addEventListener('click', () => {
+      if(document.documentElement.classList.contains('dark')) {
+        console.log('currently dark, switching to light');
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        localStorage.setItem('theme', 'light');
+      } else {
+        console.log('currently light, switching to dark');
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+  });
+</script>
