@@ -2,31 +2,41 @@
 @plugin '@tailwindcss/typography';
 
 blahg {
-  color: #41abb7
+  color: #41abb7;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-background: var(--color-slate-100);
+  --color-background: var(--color-stone-100);
   --color-primary: #41abb7;
   --color-foreground: var(--color-gray-900);
   --color-foreground-muted: var(--color-gray-400);
-  --color-reading-surface: color-mix(in srgb, var(--color-background) 97%, #000);
+  --color-reading-surface: color-mix(
+    in srgb,
+    var(--color-background) 97%,
+    #000
+  );
   --color-card: #141a1f;
   --color-highlight: #d48c1a;
+  --color-border: var(--color-stone-200);
+  --color-primary-foreground: var(--color-gray-900);
 }
 
 .dark {
   --color-background: var(--color-slate-900);
   /* --color-background: #0f1418; */
-  --color-primary: #5be8f9;
+  --color-primary: #4dc3d0;
   --color-foreground: var(--color-gray-100);
   --color-foreground-muted: var(--color-gray-500);
-  --color-reading-surface: color-mix(in srgb, var(--color-background) 97%, #fff);
-  
+  --color-reading-surface: color-mix(
+    in srgb,
+    var(--color-background) 97%,
+    #fff
+  );
+
   --color-primary-muted: #20b2a6;
-  --color-primary-foreground: #ffffff;
+  --color-primary-foreground: var(--color-gray-50);
 
   --color-secondary: #1f2830;
   --color-secondary-foreground: #20b2a6;
@@ -34,13 +44,12 @@ blahg {
   --color-muted: #252e37;
   --color-muted-foreground: #abb0b8;
 
-  --color-border: #242b32;
+  --color-border: var(--color-slate-700);
 
   --radius: 0.75rem;
 
   --color-highlight: #f5a623;
   /* --color-surface: hsl(222 33% 18%);     */
-
 }
 
 @layer base {
@@ -93,12 +102,17 @@ blahg {
     }
   }
   .animate-fade-in {
-    animation: fade-in 0.15s ease-out both, slide-in-down 0.15s ease-out both;
+    animation:
+      fade-in 0.15s ease-out both,
+      slide-in-down 0.15s ease-out both;
     display: block;
   }
 
   .animate-fade-in-slow {
-    animation: fade-in 0.8s ease-out both, slide-in-down 0.5s ease-out both, scale-down-in 0.58s ease-out both;;
+    animation:
+      fade-in 0.8s ease-out both,
+      slide-in-down 0.5s ease-out both,
+      scale-down-in 0.58s ease-out both;
     display: block;
   }
 

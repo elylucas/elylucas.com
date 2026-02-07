@@ -10,6 +10,7 @@ const blogCollection = defineCollection({
     coverImage: z.string().optional(),
     author: reference('authors'),
     imageUrl: z.string().optional(),
+    canonicalUrl: z.string().url().optional(),
   }),
 });
 

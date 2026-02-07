@@ -1,0 +1,115 @@
+---
+import Layout from '@/layouts/layout.astro';
+import Code from '@lucide/astro/icons/code';
+import Layers from '@lucide/astro/icons/layers';
+import Smartphone from '@lucide/astro/icons/smartphone';
+import Globe from '@lucide/astro/icons/globe';
+
+const skills = [
+  'TypeScript',
+  'React',
+  'Angular',
+  'Ionic',
+  'Node.js',
+  'Astro',
+  '.NET',
+  'Capacitor',
+  'Tailwind CSS',
+  'GraphQL',
+];
+
+const interests = [
+  'Open Source',
+  'Speaking',
+  'Teaching',
+  'Mobile Development',
+  'Web Performance',
+  'Developer Experience',
+];
+---
+
+<Layout>
+  <section class="container mx-auto px-6 py-12">
+    <div class="grid lg:grid-cols-5 gap-12 items-start">
+      <!-- Left column: bio -->
+      <div class="lg:col-span-3 space-y-6">
+        <div class="flex items-center gap-5 opacity-0 animate-fade-in-slow animation-delay-100">
+          <img
+            src="/assets/ely_headshot.jpg"
+            alt="Ely Lucas"
+            class="h-20 w-20 rounded-full ring-2 ring-primary/30 flex-shrink-0"
+          />
+          <h1 class="text-4xl font-bold">About Me</h1>
+        </div>
+        <p
+          class="text-lg text-muted-foreground leading-relaxed opacity-0 animate-fade-in-slow animation-delay-200"
+        >
+          I'm a software engineer based in Denver, Colorado with a passion for
+          building great user experiences on the web and mobile. I've spent years
+          working across the stack — from crafting polished front-ends with React,
+          Angular, and Ionic to building robust APIs with .NET and Node.js.
+        </p>
+        <p
+          class="text-lg text-muted-foreground leading-relaxed opacity-0 animate-fade-in-slow animation-delay-300"
+        >
+          When I'm not coding, you'll find me speaking at conferences, contributing
+          to open source, or writing about what I've learned. I believe the best way
+          to grow as a developer is to share knowledge and lift others up along the
+          way.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-6 pt-4 opacity-0 animate-fade-in-slow animation-delay-400">
+          <div class="flex items-center gap-2 text-primary">
+            <Code class="w-5 h-5" />
+            <span class="text-sm font-medium">Full Stack</span>
+          </div>
+          <div class="flex items-center gap-2 text-primary">
+            <Smartphone class="w-5 h-5" />
+            <span class="text-sm font-medium">Mobile</span>
+          </div>
+          <div class="flex items-center gap-2 text-primary">
+            <Globe class="w-5 h-5" />
+            <span class="text-sm font-medium">Web</span>
+          </div>
+          <div class="flex items-center gap-2 text-primary">
+            <Layers class="w-5 h-5" />
+            <span class="text-sm font-medium">Architecture</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: skills & interests -->
+      <div class="lg:col-span-2 space-y-8">
+        <div
+          class="glass-strong rounded-2xl border border-border p-6 opacity-0 animate-fade-in-slow animation-delay-300"
+        >
+          <h3 class="text-lg font-semibold mb-4">Skills</h3>
+          <div class="flex flex-wrap gap-2">
+            {
+              skills.map((skill) => (
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                  {skill}
+                </span>
+              ))
+            }
+          </div>
+        </div>
+
+        <div
+          class="glass-strong rounded-2xl border border-border p-6 opacity-0 animate-fade-in-slow animation-delay-500"
+        >
+          <h3 class="text-lg font-semibold mb-4">Interests</h3>
+          <div class="flex flex-wrap gap-2">
+            {
+              interests.map((interest) => (
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-highlight/15 text-highlight">
+                  {interest}
+                </span>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

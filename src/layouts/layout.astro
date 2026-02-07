@@ -2,6 +2,30 @@
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import Header from './header.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  author?: string;
+  canonicalUrl?: string;
+  type?: 'website' | 'article';
+  publishedDate?: string;
+}
+
+const siteTitle = 'Ely Lucas';
+const {
+  title,
+  description,
+  image,
+  author,
+  canonicalUrl,
+  type = 'website',
+  publishedDate,
+} = Astro.props;
+
+const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
+const pageUrl = new URL(Astro.url.pathname, Astro.site ?? 'https://elylucas.com');
 ---
 
 <html lang="en">
@@ -11,7 +35,24 @@ import Header from './header.astro';
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <ClientRouter />
-    <title>Astro</title>
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    {author && <meta name="author" content={author} />}
+
+    {/* Open Graph */}
+    <meta property="og:title" content={title ?? siteTitle} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={pageUrl} />
+    {image && <meta property="og:image" content={image} />}
+    {publishedDate && <meta property="article:published_time" content={publishedDate} />}
+
+    {/* Twitter */}
+    <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={title ?? siteTitle} />
+    {description && <meta name="twitter:description" content={description} />}
+    {image && <meta name="twitter:image" content={image} />}
     <script is:inline>
       function setTheme() {
         const theme = (() => {
@@ -80,7 +121,7 @@ import Header from './header.astro';
       }
     </div>
     <Header />
-    <main class="max-w-site mx-auto mt-12">
+    <main class="max-w-site mx-auto mt-4">
       <slot />
     </main>
   </body>

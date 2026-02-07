@@ -30,7 +30,7 @@ function postHref(post: CollectionEntry<'blog'>) {
         sortedPosts.map((post, idx) => (
           <article
             class:list={[
-              'group glass-strong rounded-2xl border border-border overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/5',
+              'post-card group glass-strong rounded-2xl border border-border overflow-hidden transition-all duration-700 hover:shadow-lg hover:shadow-primary/5 opacity-0 translate-y-4 scale-[0.97]',
               idx >= PAGE_SIZE && 'hidden',
             ]}
             data-post-index={idx}
@@ -41,11 +41,11 @@ function postHref(post: CollectionEntry<'blog'>) {
                 <img
                   src={post.data.coverImage}
                   alt={post.data.title}
-                  class="w-full aspect-[16/9] object-cover transition-transform duration-300 group-hover:scale-105"
+                  class="w-full aspect-[16/9] object-cover scale-110 transition-transform duration-700 group-[.visible]:scale-100 group-hover:scale-105"
                   loading={idx < 4 ? 'eager' : 'lazy'}
                 />
               ) : (
-                <div class="w-full aspect-[16/9] bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                <div class="w-full aspect-[16/9] bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center scale-110 transition-transform duration-700 group-[.visible]:scale-100">
                   <span class="text-4xl font-bold text-primary/30 select-none">
                     {post.data.title.charAt(0)}
                   </span>
@@ -112,16 +112,44 @@ function postHref(post: CollectionEntry<'blog'>) {
     const grid = document.getElementById('post-grid');
     const btn = document.getElementById('load-more-btn');
     const wrapper = document.getElementById('load-more-wrapper');
-    if (!grid || !btn || !wrapper) return;
+    if (!grid) return;
+
+    // Animate cards in when they enter the viewport
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const card = entry.target;
+            const idx = Number(card.getAttribute('data-post-index')) % 2;
+            const delay = idx * 120;
+            setTimeout(() => {
+              card.classList.add('visible');
+              card.classList.remove('opacity-0', 'translate-y-4', 'scale-[0.97]');
+            }, delay);
+            observer.unobserve(card);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const allCards = grid.querySelectorAll('[data-post-index]');
+    allCards.forEach((card) => {
+      if (!card.classList.contains('hidden')) {
+        observer.observe(card);
+      }
+    });
+
+    const total = allCards.length;
+    if (!btn || !wrapper) return;
 
     let visible = PAGE_SIZE;
-    const allCards = grid.querySelectorAll('[data-post-index]');
-    const total = allCards.length;
 
     btn.addEventListener('click', () => {
       const nextVisible = Math.min(visible + PAGE_SIZE, total);
       for (let i = visible; i < nextVisible; i++) {
         allCards[i].classList.remove('hidden');
+        observer.observe(allCards[i]);
       }
       visible = nextVisible;
       if (visible >= total) {

@@ -3,45 +3,59 @@ import Button from '@/components/button.astro';
 import ArrowRight from '@lucide/astro/icons/arrow-right';
 ---
 
-<!-- content -->
-<div class="container mx-auto px-6 relative z-10 min-w-full">
-  <div class="grid lg:grid-cols-2 gap-12 items-center">
-    <!-- left column -->
-    <div class="space-y-8">
-      <div class="animate-fade-in-slow animation-delay-400">
-        <span class="flex items-center gap-4 text-sm">
+<section class="container mx-auto px-12 py-12 flex items-start">
+  <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
+    <!-- Left column: text content -->
+    <div class="space-y-8 order-2 lg:order-1">
+      <h1
+        class="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight opacity-0 animate-fade-in-slow animation-delay-500"
+      >
+        Do you <span class="text-primary glow-text">dream</span>
+        in <span class="font-serif italic font-normal">code?</span>
+      </h1>
+
+      <div class="opacity-0 animate-fade-in-slow animation-delay-400">
+        <div class="flex items-center gap-4">
           <img
             src="/assets/ely_headshot.jpg"
-            alt="Ely Lucas Headshot"
-            class="h-32 w-32 rounded-full"
+            alt="Ely Lucas"
+            class="h-16 w-16 rounded-full ring-2 ring-primary/30 flex-shrink-0"
           />
-          <p class="text-lg text-foreground max-w-lg" style="--color-foreground: blue;">
-            Hi I'm Ely, a software engineer in Denver, Colorado who loves
-            building things and teaching what I learn.
+          <p class="text-lg text-muted-foreground max-w-md leading-relaxed">
+            Hi I'm <span class="text-foreground font-medium">Ely</span>, a
+            software engineer in Denver, Colorado who loves building things and
+            teaching what I learn.
           </p>
-        </span>
+        </div>
+      </div>
+
+      <div
+        class="flex flex-wrap gap-4 opacity-0 animate-fade-in-slow animation-delay-600"
+      >
+        <a href="/blog">
+          <Button size="lg">
+            Read the blog
+            <ArrowRight class="w-5 h-5" />
+          </Button>
+        </a>
+        <a
+          href="/about"
+          class="px-4 py-1.5 text-lg rounded-lg font-medium border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors inline-flex items-center gap-2"
+        >
+          About me
+        </a>
       </div>
     </div>
 
-    <!-- headline -->
-    <div class="">
-      <h1
-        class="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight animate-fade-in-slow animation-delay-200"
-      >
-        Does Pixel <span class="text-primary glow-text">dream</span>
-        in <span class="font-serif italic font-normal text-white">code?</span>
-      </h1>
+    <!-- Right column: Pixel robot -->
+    <div
+      class="flex justify-center order-1 lg:order-2"
+    >
       <img
         src="/assets/pixel_laptop.png"
-        alt="Pixel Laptop"
-        class="inline mr-2 animate-spin-in animate-scale-down-in animation-delay-600"
+        alt="Pixel the robot on a laptop"
+        class="w-full max-w-md lg:max-w-lg opacity-0 animate-scale-down-in animation-delay-300 drop-shadow-[0_0_40px_rgba(91,232,249,0.15)]"
       />
     </div>
-
-    <!-- ctas -->
-    <!-- <div>
-        <Button size="lg">Blog <ArrowRight class="w-5 h-5"/></Button>
-        <button class=""></button>
-       </div> -->
   </div>
-</div>
+</section>

@@ -7,7 +7,7 @@ import X from '@lucide/astro/icons/x';
 
 const navLinks = [
   {
-    href: '/#about',
+    href: '/about',
     label: 'About',
   },
   {
@@ -24,19 +24,43 @@ const navLinks = [
 <header
   class="flex justify-between z-50 max-w-site items-center mx-auto px-4 py-2"
 >
-  <div class="flex">
-    <a
-      href="/"
-      class="text-2xl font-bold tracking-tight text-primary hover:text-primary/50"
-    >
-      <img
-        src="/assets/pixel_avatar.png"
-        alt="Ely Lucas Logo"
-        class="inline h-16 w-16"
-      />
-      Ely Lucas
-    </a>
-  </div>
+  <a
+    href="/"
+    class="group flex items-center gap-3 text-xl tracking-tight font-mono"
+  >
+    <img
+      src="/assets/pixel_avatar.png"
+      alt="Ely Lucas Logo"
+      class="inline h-16 w-16"
+    />
+    <!-- <img
+      src="/assets/pixel_avatar.png"
+      alt="Ely Lucas Logo"
+      class="h-10 w-10 rounded-full ring-2 ring-primary/30 group-hover:ring-primary/60 transition-all"
+    /> -->
+    <span class="flex items-center gap-1">
+      <span
+        class="text-muted-foreground group-hover:text-foreground/50 transition-colors"
+        >&lt;</span
+      >
+      <span
+        class="text-primary font-bold group-hover:text-primary/80 transition-colors"
+        >Ely</span
+      >
+      <span
+        class="text-muted-foreground group-hover:text-primary/60 transition-colors"
+        >.</span
+      >
+      <span
+        class="text-foreground font-bold group-hover:text-foreground/70 transition-colors"
+        >Lucas</span
+      >
+      <span
+        class="text-muted-foreground group-hover:text-foreground/50 transition-colors"
+        >/&gt;</span
+      >
+    </span>
+  </a>
   <nav class="">
     <!-- Desktop -->
     <div class="hidden md:flex items-center gap-4">
@@ -78,7 +102,7 @@ const navLinks = [
   <div
     role="menu"
     aria-hidden="true"
-    class="hidden sm:hidden glass-strong absolute top-24 left-0 right-0 z-100"
+    class="hidden sm:hidden bg-background border-b border-border absolute top-24 left-0 right-0 z-100"
     id="mobile-menu"
   >
     <div class="container mx-auto px-6 py-6 flex flex-col gap-4">
@@ -123,7 +147,7 @@ const navLinks = [
 
     const themeButton = document.getElementById('theme-button');
     themeButton?.addEventListener('click', () => {
-      if(document.documentElement.classList.contains('dark')) {
+      if (document.documentElement.classList.contains('dark')) {
         console.log('currently dark, switching to light');
         document.documentElement.classList.remove('dark');
         document.documentElement.classList.add('light');

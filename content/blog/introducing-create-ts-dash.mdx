@@ -1,0 +1,83 @@
+---
+title: "Introducing ts-dash: A Quick and Simple TypeScript Project Creator"
+publishedDate: 2026-02-06
+author: ely-lucas
+summary: I got tired of the same setup dance every time I needed a quick TypeScript app, so I built create-ts-dash. Does something like this already exist? Probably. Did I look? Nope.
+coverImage: /assets/blog/introducing-create-ts-dash/introducing-create-ts-dash-cover.png
+---
+
+## The Itch
+
+Lately I've been creating a lot of throwaway TypeScript projects. You know that feeling. You have an idea for a quick script, a small API, or just want to try something out in TypeScript. So you create a folder, run `npm init`, install TypeScript, set up a `tsconfig.json`, configure your build step, add a watch script, try a bunch of different options to get the module system right, and by the time you're done you've forgotten what you were trying to build in the first place.
+
+I've done this dance a hundred times. And every time, I think "I should really automate this." So I finally did.
+
+The amazing part? I did it all in [Claude Code](https://claude.ai/code) (right after Opus 4.6 dropped), literally going from idea to a working scaffolding tool in about an hour. It was a blast. I told Claude exactly what I wanted, and it generated the entire project for me. I just had to tweak a few things here and there.
+
+## create-ts-dash
+
+[create-ts-dash](https://github.com/elylucas/create-ts-dash) is a simple scaffolding tool that gets you from zero to a working TypeScript project in one command:
+
+```bash
+npm create ts-dash my-app
+```
+
+That's it. You get a clean TypeScript project with sensible defaults, ready to go. No boilerplate fatigue, no decision paralysis. The project is created from scratch each time, so you always get the latest package versions.
+
+## What You Get
+
+Every project comes with:
+
+- **TypeScript** with a strict config (because we're not animals)
+- **tsx** for running TypeScript directly with file watching
+- **ESM modules** configured out of the box
+- **Git** initialized with a `.gitignore`
+
+## Need a Web Server?
+
+If you're building an API or a server, create-ts-dash lets you pick from three frameworks:
+
+- **Express** — the one you already know
+- **Fastify** — fast and low overhead
+- **Hono** — lightweight and ultrafast
+
+## Optional Tooling
+
+You can also opt into:
+
+- **ESLint + Prettier** for linting and formatting
+- **Vitest** for testing
+
+Nothing is forced on you. Pick what you need, skip what you don't.
+
+## "Doesn't This Already Exist?"
+
+Yes. Probably. Almost certainly. I didn't do extensive research, and I don't care. Sometimes you want to build something that works exactly the way *you* think it should. Something where you know every line of code because you wrote it. Something that scratches your specific itch.
+
+I built create-ts-dash for me. If it's useful to you too, that's awesome. If you prefer something else, that's cool too. The world has room for another scaffolding tool.
+
+## Try It Out
+
+```bash
+# with npm
+npm create ts-dash my-app
+
+# with yarn
+yarn create ts-dash my-app
+
+# with pnpm
+pnpm create ts-dash my-app
+
+# with bun
+bun create ts-dash my-app
+```
+
+Or run it without a project name for interactive mode:
+
+```bash
+npm create ts-dash
+```
+
+Check out the repo at [github.com/elylucas/create-ts-dash](https://github.com/elylucas/create-ts-dash), give it a spin, and let me know what you think.
+
+Happy coding!

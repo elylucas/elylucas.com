@@ -25,7 +25,15 @@ const author = await getEntry('authors', post.data.author.id);
 const Content = await render(post);
 ---
 
-<Layout>
+<Layout
+  title={post.data.title}
+  description={post.data.summary}
+  image={post.data.coverImage}
+  author={author?.data.name}
+  canonicalUrl={post.data.canonicalUrl}
+  type="article"
+  publishedDate={post.data.publishedDate.toISOString()}
+>
   <article class="max-w-content mx-auto px-6 py-12">
     {/* Back link */}
     <a
@@ -65,19 +73,19 @@ const Content = await render(post);
       </div>
 
       {/* Summary */}
-      {
+      <!-- {
         post.data.summary && (
           <p class="text-lg text-muted-foreground leading-relaxed">
             {post.data.summary}
           </p>
         )
-      }
+      } -->
     </header>
 
     {/* Cover image */}
     {
       post.data.coverImage && (
-        <div class="rounded-2xl overflow-hidden mb-10">
+        <div class="rounded-2xl aspect-video overflow-hidden mb-10">
           <img
             src={post.data.coverImage}
             alt={post.data.title}
