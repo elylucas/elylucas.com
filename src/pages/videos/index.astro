@@ -5,38 +5,31 @@ import Play from '@lucide/astro/icons/play';
 import Clock from '@lucide/astro/icons/clock';
 import Calendar from '@lucide/astro/icons/calendar';
 
-const videos = await getCollection('videos');
-const sortedVideos = videos.sort(
+const allVideos = await getCollection('videos');
+const sortedVideos = allVideos.sort(
   (a: CollectionEntry<'videos'>, b: CollectionEntry<'videos'>) =>
-    new Date(b.data.publishedDate).getTime() -
-    new Date(a.data.publishedDate).getTime()
+    new Date(b.data.publishedDate).getTime() - new Date(a.data.publishedDate).getTime()
 );
 
 const categories = [
   { value: 'all', label: 'All' },
-  { value: 'talk', label: 'Talks' },
-  { value: 'tutorial', label: 'Tutorials' },
-  { value: 'guest', label: 'Guest' },
-  { value: 'podcast', label: 'Podcasts' },
-  { value: 'other', label: 'Other' },
+  { value: 'video', label: 'Videos' },
+  { value: 'presentation', label: 'Presentations' },
+  { value: 'webinar', label: 'Webinars' },
+  { value: 'livestream', label: 'Livestreams' },
 ];
-
-const categoryColors: Record<string, string> = {
-  talk: 'bg-primary/15 text-primary',
-  tutorial: 'bg-highlight/15 text-highlight',
-  guest: 'bg-purple-500/15 text-purple-400',
-  podcast: 'bg-green-500/15 text-green-400',
-  other: 'bg-gray-500/15 text-gray-400',
-};
 
 function getThumbnail(video: CollectionEntry<'videos'>) {
   return video.data.thumbnail || `https://img.youtube.com/vi/${video.data.youtubeId}/mqdefault.jpg`;
 }
 ---
 
-<Layout>
-  <section class="container mx-auto px-6 py-12">
-    <h1 class="text-4xl font-bold mb-8">Videos</h1>
+<Layout title="Videos">
+  <div class="container mx-auto px-6 py-12">
+    <h1 class="text-4xl font-bold mb-2">Videos</h1>
+    <p class="text-muted-foreground mb-10">
+      Talks, tutorials, and other video content.
+    </p>
 
     <!-- Category filters -->
     <div class="flex flex-wrap gap-2 mb-8" id="category-filters">
@@ -62,7 +55,7 @@ function getThumbnail(video: CollectionEntry<'videos'>) {
       {
         sortedVideos.map((video) => (
           <article
-            class="glass-strong rounded-t-2xl border-b border-border overflow-hidden"
+            class="video-card group glass-strong rounded-2xl border border-border overflow-hidden transition-all duration-700 hover:shadow-lg hover:shadow-primary/5 opacity-0 translate-y-4 scale-[0.97]"
             data-category={video.data.category}
           >
             {/* Thumbnail with play overlay */}
@@ -70,12 +63,12 @@ function getThumbnail(video: CollectionEntry<'videos'>) {
               href={`https://www.youtube.com/watch?v=${video.data.youtubeId}`}
               target="_blank"
               rel="noopener noreferrer"
-              class="block relative group"
+              class="block relative overflow-hidden"
             >
               <img
                 src={getThumbnail(video)}
                 alt={video.data.title}
-                class="w-full aspect-video object-cover"
+                class="w-full aspect-video object-cover scale-110 transition-transform duration-700 group-[.visible]:scale-100 group-hover:scale-105"
                 loading="lazy"
               />
               <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -85,17 +78,9 @@ function getThumbnail(video: CollectionEntry<'videos'>) {
               </div>
             </a>
 
-            <div class="p-4 space-y-3">
-              {/* Meta row: badge, event, duration */}
+            <div class="p-5 space-y-3">
+              {/* Meta row */}
               <div class="flex flex-wrap items-center gap-2 text-sm">
-                <span
-                  class:list={[
-                    'px-2 py-0.5 rounded-full text-xs font-medium',
-                    categoryColors[video.data.category] || categoryColors.other,
-                  ]}
-                >
-                  {video.data.category}
-                </span>
                 {video.data.event && (
                   <span class="text-muted-foreground">{video.data.event}</span>
                 )}
@@ -112,7 +97,7 @@ function getThumbnail(video: CollectionEntry<'videos'>) {
                 href={`https://www.youtube.com/watch?v=${video.data.youtubeId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-xl font-semibold text-primary hover:underline block"
+                class="text-xl font-semibold text-foreground group-hover:text-primary transition-colors block leading-snug"
               >
                 {video.data.title}
               </a>
@@ -128,7 +113,9 @@ function getThumbnail(video: CollectionEntry<'videos'>) {
               </p>
 
               {/* Description */}
-              <p class="text-muted-foreground">{video.data.description}</p>
+              <p class="text-muted-foreground text-sm leading-relaxed">
+                {video.data.description}
+              </p>
 
               {/* Tags */}
               {video.data.tags && video.data.tags.length > 0 && (
@@ -145,7 +132,7 @@ function getThumbnail(video: CollectionEntry<'videos'>) {
         ))
       }
     </div>
-  </section>
+  </div>
 </Layout>
 
 <script>
@@ -156,6 +143,38 @@ function getThumbnail(video: CollectionEntry<'videos'>) {
 
     const buttons = filters.querySelectorAll<HTMLButtonElement>('[data-filter]');
     const cards = grid.querySelectorAll<HTMLElement>('[data-category]');
+
+    // Animate cards in when they enter the viewport
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const card = entry.target as HTMLElement;
+            const siblings = Array.from(grid.querySelectorAll('[data-category]:not([style*="display: none"])'));
+            const visibleIdx = siblings.indexOf(card) % 2;
+            const delay = visibleIdx * 120;
+            setTimeout(() => {
+              card.classList.add('visible');
+              card.classList.remove('opacity-0', 'translate-y-4', 'scale-[0.97]');
+            }, delay);
+            observer.unobserve(card);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    function observeVisibleCards() {
+      cards.forEach((card) => {
+        if (card.style.display !== 'none') {
+          if (!card.classList.contains('visible')) {
+            observer.observe(card);
+          }
+        }
+      });
+    }
+
+    observeVisibleCards();
 
     buttons.forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -182,14 +201,19 @@ function getThumbnail(video: CollectionEntry<'videos'>) {
           }
         });
 
-        // Show/hide cards
+        // Show/hide cards and reset animation for newly shown cards
         cards.forEach((card) => {
           if (filter === 'all' || card.dataset.category === filter) {
             card.style.display = '';
+            if (!card.classList.contains('visible')) {
+              card.classList.add('opacity-0', 'translate-y-4', 'scale-[0.97]');
+            }
           } else {
             card.style.display = 'none';
           }
         });
+
+        observeVisibleCards();
       });
     });
   });

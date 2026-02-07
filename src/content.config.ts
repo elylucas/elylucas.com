@@ -29,7 +29,7 @@ const videoCollection = defineCollection({
     publishedDate: z.date(),
     description: z.string(),
     youtubeId: z.string(),
-    category: z.enum(['talk', 'tutorial', 'guest', 'podcast', 'other']),
+    category: z.enum(['video', 'presentation', 'webinar', 'livestream']),
     tags: z.array(z.string()).optional(),
     event: z.string().optional(),
     duration: z.string().optional(),

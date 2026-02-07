@@ -1,10 +1,6 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
-blahg {
-  color: #41abb7;
-}
-
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -113,7 +109,7 @@ blahg {
       fade-in 0.8s ease-out both,
       slide-in-down 0.5s ease-out both,
       scale-down-in 0.58s ease-out both;
-    display: block;
+    /* display: block; */
   }
 
   @keyframes fade-out {
